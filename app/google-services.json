@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "583048073630",
+    "project_id": "will-test-project-7e30a",
+    "storage_bucket": "will-test-project-7e30a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:583048073630:android:df9b534a13cc74ee7dc68f",
+        "android_client_info": {
+          "package_name": "com.premise.firebasedevfest2022"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "583048073630-992rd353098argdanii9jm13iujmk08n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhtx8QtE5JR0BqUXR3THZ2cH7WjF99Edk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "583048073630-992rd353098argdanii9jm13iujmk08n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
