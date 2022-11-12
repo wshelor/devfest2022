@@ -1,7 +1,6 @@
 package com.premise.firebasedevfest2022.domain
 
 import androidx.lifecycle.ViewModel
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -19,9 +18,9 @@ class RgbSelectionScreenViewModel : ViewModel() {
         database.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 dataState.value = State(
-                    snapshot.child("Red").getValue(Int::class.java)?: 0,
-                    snapshot.child("Green").getValue(Int::class.java)?: 0,
-                    snapshot.child("Blue").getValue(Int::class.java)?: 0,
+                    snapshot.child("Red").getValue(Int::class.java) ?: 0,
+                    snapshot.child("Green").getValue(Int::class.java) ?: 0,
+                    snapshot.child("Blue").getValue(Int::class.java) ?: 0,
                     Firebase.remoteConfig.getString("RgbTeamSelection")
                 )
             }
@@ -33,7 +32,7 @@ class RgbSelectionScreenViewModel : ViewModel() {
     }
 
     fun addPoint() {
-        when(dataState.value.currentTeam) {
+        when (dataState.value.currentTeam) {
             "Red" -> database.child("Red").setValue(dataState.value.redPoints + 1)
             "Green" -> database.child("Green").setValue(dataState.value.greenPoints + 1)
             "Blue" -> database.child("Blue").setValue(dataState.value.bluePoints + 1)

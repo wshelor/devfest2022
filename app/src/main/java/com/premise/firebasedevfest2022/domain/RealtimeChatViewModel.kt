@@ -2,6 +2,7 @@ package com.premise.firebasedevfest2022.domain
 
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -32,8 +33,10 @@ class RealtimeChatViewModel : ViewModel() {
 
     fun addMessage(message: String) {
         val user = FirebaseAuth.getInstance().currentUser!!
-        database.push().setValue(ChatMessage(message, user.displayName ?: user.uid))
+        database.push().setValue(ChatMessage(message, user.getSender()))
     }
 }
+
+private fun FirebaseUser.getSender() : String = if (displayName.isNullOrBlank()) uid else displayName!!
 
 data class ChatMessage(val message: String = "", val sender: String = "")
