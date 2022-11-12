@@ -7,13 +7,19 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.ButtonElevation
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,6 +50,7 @@ class MainActivity : ComponentActivity() {
         firebaseAnalytics.logEvent("auth_completed") {
             param("result", it.resultCode.toAuthResult())
         }
+        FirebaseCrashlytics.getInstance().log("User Authenticated: ${FirebaseAuth.getInstance().currentUser?.displayName}")
     }
 
     private fun launchSigninFlow() {
@@ -102,18 +109,20 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun DefaultScreen(navController: NavController) {
-        Column(modifier = Modifier.padding(8.dp)) {
+        Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Image(modifier = Modifier.padding(14.dp),
+                painter = painterResource(id = R.drawable.firebase_logo),
+                contentDescription = "Firebase Logo"
+            )
             Text(
                 modifier = Modifier
-                    .padding(4.dp)
+                    .padding(14.dp)
                     .fillMaxWidth(),
                 text = "Firebase 101 \n @ DevFest Seattle 2022",
                 fontSize = 25.sp, textAlign = TextAlign.Center
             )
 
-            Button(modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(), onClick = {
+            MainScreenButton("Realtime Chat") {
                 if (FirebaseAuth.getInstance().currentUser == null) {
                     launchSigninFlow()
                     firebaseAnalytics.logEvent("auth_requested") {
@@ -123,13 +132,9 @@ class MainActivity : ComponentActivity() {
                     firebaseAnalytics.logEvent("realtime_chat", null)
                     navController.navigate(RealtimeChatScreen.SCREEN_ROUTE)
                 }
-            }) {
-                Text(text = "Realtime Chat")
             }
 
-            Button(modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(), onClick = {
+            MainScreenButton("RGB Battle") {
                 if (FirebaseAuth.getInstance().currentUser == null) {
                     launchSigninFlow()
                     firebaseAnalytics.logEvent("auth_requested") {
@@ -139,36 +144,34 @@ class MainActivity : ComponentActivity() {
                     firebaseAnalytics.logEvent("rgb_battle", null)
                     navController.navigate(RgbSelectionScreen.SCREEN_ROUTE)
                 }
-            }) {
-                Text(text = "RGB Battle")
             }
 
-            Button(modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(), onClick = {
+            MainScreenButton("Report a non-fatal problem") {
                 FirebaseCrashlytics.getInstance().recordException(RuntimeException("This one isn't that bad"))
-            }) {
-                Text(text = "Report a non-fatal problem")
             }
 
-            Button(modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(), onClick = {
+            MainScreenButton("Crash the App") {
                 throw java.lang.RuntimeException("Something bad happened!!")
-            }) {
-                Text(text = "Crash the App")
             }
 
             if (FirebaseAuth.getInstance().currentUser != null) {
-                Button(modifier = Modifier
-                    .padding(8.dp)
-                    .fillMaxWidth(), onClick = {
+                MainScreenButton("Log Out") {
                     FirebaseAuth.getInstance().signOut()
                     navController.navigate("/", NavOptions.Builder().setPopUpTo("/", true).build())
-                }) {
-                    Text(text = "Log Out")
                 }
+
             }
+        }
+    }
+
+    @Composable
+    fun MainScreenButton(text: String,
+                         onClick: () -> Unit) {
+        Button(modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth(),
+            onClick = onClick) {
+            Text(modifier = Modifier.padding(4.dp), text = text)
         }
     }
 }

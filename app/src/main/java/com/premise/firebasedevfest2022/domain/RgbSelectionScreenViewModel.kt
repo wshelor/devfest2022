@@ -1,6 +1,9 @@
 package com.premise.firebasedevfest2022.domain
 
 import androidx.lifecycle.ViewModel
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.analytics.ktx.logEvent
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -12,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 class RgbSelectionScreenViewModel : ViewModel() {
     private val database get() = FirebaseDatabase.getInstance().reference.child("rgbBattle")
+    private val firebaseAnalytics = Firebase.analytics
     val dataState = MutableStateFlow(State())
 
     init {
@@ -38,7 +42,9 @@ class RgbSelectionScreenViewModel : ViewModel() {
             "Blue" -> database.child("Blue").setValue(dataState.value.bluePoints + 1)
             else -> FirebaseCrashlytics.getInstance().recordException(java.lang.Exception("Attempted to vote for nonexistent team!"))
         }
-
+        firebaseAnalytics.logEvent("color_voted") {
+            param("color", dataState.value.currentTeam)
+        }
         database.push()
     }
 
