@@ -49,7 +49,7 @@ internal fun RealtimeChatScreen(viewModel: RealtimeChatViewModel) {
                         Modifier
                             .padding(4.dp)
                             .fillMaxWidth(),
-                        backgroundColor = Color(0xFFEEEEEE),
+                        backgroundColor = Color(0x22888888),
                         elevation = 8.dp
                     ) {
                         Column {
