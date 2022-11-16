@@ -2,10 +2,15 @@
 
 package com.premise.firebasedevfest2022
 
+import android.Manifest.permission.POST_NOTIFICATIONS
 import android.app.Activity.RESULT_OK
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import com.firebase.ui.auth.AuthUI
@@ -30,12 +36,14 @@ import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.analytics.ktx.logEvent
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 import com.premise.firebasedevfest2022.domain.RealtimeChatViewModel
@@ -46,6 +54,8 @@ import com.premise.firebasedevfest2022.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
     private lateinit var firebaseAnalytics: FirebaseAnalytics
+    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+
     private val signInLauncher = registerForActivityResult(FirebaseAuthUIActivityResultContract()) {
         firebaseAnalytics.logEvent("auth_completed") {
             param("result", it.resultCode.toAuthResult())
@@ -74,6 +84,7 @@ class MainActivity : ComponentActivity() {
         firebaseAnalytics = Firebase.analytics
 
         initializeRemoteConfig()
+        initializeFcm()
 
         setContent {
             AppTheme {
@@ -96,6 +107,25 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun initializeFcm() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissionLauncher.launch(POST_NOTIFICATIONS)
+        }
+
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                return@OnCompleteListener
+            }
+
+            val token = task.result
+
+            Log.d("TAG", token)
+        })
+
     }
 
     private fun initializeRemoteConfig() {
