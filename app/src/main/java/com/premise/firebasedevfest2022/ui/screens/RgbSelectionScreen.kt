@@ -69,8 +69,10 @@ internal fun RgbSelectionScreen(viewModel: RgbSelectionScreenViewModel) {
                 }
             }
 
-            Button(modifier = Modifier.padding(4.dp).fillMaxWidth(), onClick = { viewModel.addPoint() }) {
-                Text(text = "Add a point to the ${state.value.currentTeam} team")
+            if (state.value.enabled) {
+                Button(modifier = Modifier.padding(4.dp).fillMaxWidth(), onClick = { viewModel.addPoint() }) {
+                    Text(text = "Add a point to the ${state.value.currentTeam} team")
+                }
             }
         }
     }

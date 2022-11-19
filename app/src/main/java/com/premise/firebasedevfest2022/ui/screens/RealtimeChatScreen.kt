@@ -42,17 +42,16 @@ internal fun RealtimeChatScreen(viewModel: RealtimeChatViewModel) {
                     .fillMaxWidth()
                     .padding(vertical = 4.dp, horizontal = 4.dp),
                 state = listState,
-                contentPadding = PaddingValues(6.dp)
+                contentPadding = PaddingValues(8.dp)
             ) {
                 items(state.value) {
                     Card(
                         Modifier
                             .padding(4.dp)
                             .fillMaxWidth(),
-                        backgroundColor = Color(0x22888888),
-                        elevation = 8.dp
+                        elevation = 4.dp
                     ) {
-                        Column {
+                        Column(modifier = Modifier.background(color = Color(0x22888888))) {
                             Text(modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp), text = it.message, fontSize = 16.sp)
                             Text(modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp), text = it.sender, fontSize = 12.sp)
                         }

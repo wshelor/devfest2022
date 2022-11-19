@@ -25,6 +25,7 @@ class RgbSelectionScreenViewModel : ViewModel() {
                     snapshot.child("Red").getValue(Int::class.java) ?: 0,
                     snapshot.child("Green").getValue(Int::class.java) ?: 0,
                     snapshot.child("Blue").getValue(Int::class.java) ?: 0,
+                    snapshot.child("Enabled").getValue(Boolean::class.java) ?: false,
                     Firebase.remoteConfig.getString("RgbTeamSelection")
                 )
             }
@@ -48,6 +49,6 @@ class RgbSelectionScreenViewModel : ViewModel() {
         database.push()
     }
 
-    data class State(val redPoints: Int = 0, val greenPoints: Int = 0, val bluePoints: Int = 0, val currentTeam: String = "Loading")
+    data class State(val redPoints: Int = 0, val greenPoints: Int = 0, val bluePoints: Int = 0, val enabled: Boolean = false, val currentTeam: String = "Loading")
 }
 

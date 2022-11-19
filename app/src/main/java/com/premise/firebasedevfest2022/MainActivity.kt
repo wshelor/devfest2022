@@ -8,6 +8,8 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,7 +31,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.NavOptions
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
@@ -37,6 +41,7 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.analytics.ktx.logEvent
@@ -51,8 +56,11 @@ import com.premise.firebasedevfest2022.domain.RgbSelectionScreenViewModel
 import com.premise.firebasedevfest2022.ui.screens.RealtimeChatScreen
 import com.premise.firebasedevfest2022.ui.screens.RgbSelectionScreen
 import com.premise.firebasedevfest2022.ui.theme.AppTheme
+import kotlinx.coroutines.flow.collect
 
 class MainActivity : ComponentActivity() {
+    private lateinit var rootView: ViewGroup
+    private lateinit var navController: NavHostController
     private lateinit var firebaseAnalytics: FirebaseAnalytics
     private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
@@ -61,10 +69,10 @@ class MainActivity : ComponentActivity() {
             param("result", it.resultCode.toAuthResult())
         }
         FirebaseCrashlytics.getInstance().log("User Authenticated: ${FirebaseAuth.getInstance().currentUser?.displayName}")
+        navController.navigate("/", NavOptions.Builder().setPopUpTo("/", true).build())
     }
 
     private fun launchSigninFlow() {
-
         val providers = arrayListOf(
             AuthUI.IdpConfig.EmailBuilder().build(),
             AuthUI.IdpConfig.GoogleBuilder().build(),
@@ -85,10 +93,11 @@ class MainActivity : ComponentActivity() {
 
         initializeRemoteConfig()
         initializeFcm()
+        rootView = window.decorView.findViewById(android.R.id.content)
 
         setContent {
             AppTheme {
-                val navController = rememberAnimatedNavController()
+                navController = rememberAnimatedNavController()
 
                 AnimatedNavHost(navController = navController, startDestination = "/") {
                     composable("/") {
@@ -115,15 +124,18 @@ class MainActivity : ComponentActivity() {
         ) {
             requestPermissionLauncher.launch(POST_NOTIFICATIONS)
         }
+        lifecycleScope.launchWhenStarted {
+            ActiveFirebaseMessagingService.dataState.collect {
+                it?.let {
+                    Toast.makeText(baseContext, "${it.notification?.title} - ${it.notification?.body}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
 
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
             if (!task.isSuccessful) {
                 return@OnCompleteListener
             }
-
-            val token = task.result
-
-            Log.d("TAG", token)
         })
 
     }
@@ -152,7 +164,7 @@ class MainActivity : ComponentActivity() {
                 fontSize = 25.sp, textAlign = TextAlign.Center
             )
 
-            MainScreenButton("Realtime Chat") {
+            MainScreenButton("Part 1 - Build\nRealtime Chat") {
                 if (FirebaseAuth.getInstance().currentUser == null) {
                     launchSigninFlow()
                     firebaseAnalytics.logEvent("auth_requested") {
@@ -164,7 +176,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            MainScreenButton("RGB Battle") {
+            MainScreenButton("Part 2 - Engage\nRGB Battle") {
                 if (FirebaseAuth.getInstance().currentUser == null) {
                     launchSigninFlow()
                     firebaseAnalytics.logEvent("auth_requested") {
@@ -176,11 +188,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            MainScreenButton("Report a non-fatal problem") {
+            MainScreenButton("Part 3 - Release & Monitor\nReport a non-fatal problem") {
                 FirebaseCrashlytics.getInstance().recordException(RuntimeException("This one isn't that bad"))
+                Toast.makeText(baseContext, "Problem reported to Firebase", Toast.LENGTH_SHORT).show()
             }
 
-            MainScreenButton("Crash the App") {
+            MainScreenButton("Part 3 - Release & Monitor\nCrash the App") {
                 throw java.lang.RuntimeException("Something bad happened!!")
             }
 
@@ -189,19 +202,25 @@ class MainActivity : ComponentActivity() {
                     FirebaseAuth.getInstance().signOut()
                     navController.navigate("/", NavOptions.Builder().setPopUpTo("/", true).build())
                 }
+            } else {
+                MainScreenButton("Log In") {
+                    launchSigninFlow()
+                    firebaseAnalytics.logEvent("auth_requested") {
+                        param("source", "Login Button")
+                    }
+                }
 
             }
         }
     }
 
     @Composable
-    fun MainScreenButton(text: String,
-                         onClick: () -> Unit) {
+    fun MainScreenButton(text: String, onClick: () -> Unit) {
         Button(modifier = Modifier
             .padding(8.dp)
             .fillMaxWidth(),
             onClick = onClick) {
-            Text(modifier = Modifier.padding(4.dp), text = text)
+            Text(modifier = Modifier.padding(4.dp), text = text, textAlign = TextAlign.Center)
         }
     }
 }
